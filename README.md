@@ -1,5 +1,5 @@
 # Goo Engine Linux Build Wrapper
-This project provides a relatively comprehensive, automated toolkit for building, installing, and packaging [Goo Engine](https://github.com/dillongoostudios/goo-engine) (a fork of Blender with an emphasis on NPR) on Linux.
+This project provides a relatively comprehensive, automated toolkit for building, installing, and packaging [Goo Engine](https://github.com/dillongoostudios/goo-engine) (a fork of Blender with an emphasis on NPR) on Linux. THIS VERSION DOES NOT RUN. SOMEONE PLEASE FIX THIS. SOMEONE THAT IS HOPEFULLY NOT ME.
 
 ## Prereqs
 Before running the scripts, ensure you have the following installed on your Linux distribution (though I'm fairly certain the process should install most of these):
@@ -19,7 +19,6 @@ cd goo-engine-linux-wrapper
 chmod +x build_goo_engine.sh
 ./build_goo_engine.sh
 ```
-This will take a stupidly long time. I have a zip of the current `lib/` files [here](https://gofile.io/d/dIOflj), so you don't have to deal with all the 429s if you don't want to. If there's a better way of distributing this, let me know because MAN is this painful.
 
 ## Installing
 ```
@@ -64,12 +63,13 @@ What I think the proper installation process is supposed to be is:
 What the actual installation process is:
 - Cloning the repo.
 - Installing the requisite packages from `./build_files/build_environment/install_linux_packages.py`.
-- Patching `./build_files/utils/make_update.py` to retry on timeout, because the servers are seemingly dogshit.
 - Taking 81 years to download the libraries using `./build_files/utils/make_update.py --use-linux-libraries`.
 - Patching like four files either in `lib/` or `source/` somewhere that causes compilation errors.
 - Building GooEngine using `make`.
 
 It honestly wasn't that bad. The problems started when I started trying to automate the build using some scripts. I tried seeing if I could just ignore the `robots.txt` and download the libs through HTTP, with it somehow being even slower than just waiting out the timeout for SVN. I tried just making my own git diffs and using them here, but it was such a tedious process that I just made it modular and slammed the stuff in `diff_ref/`. After all that garbage, I just asked Gemini to make me an installation and AppImage generation script. 
+
+Thankfully they did fix `make_update.py`, so that shouldn't be a big deal. Unfortunately, this also made them entirely break the build. It compiles, but it sure as hell doesn't run.
 
 ## Current Patches
 - `nanovdb/util/GridBuilder.h`: Fixes a template compilation error (isActive -> mValueMask.isOn).

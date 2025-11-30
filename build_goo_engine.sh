@@ -6,8 +6,8 @@ REPO_URL="https://github.com/dillongoostudios/goo-engine.git"
 WRAPPER_DIR=$(pwd)
 
 # This might change depending on future lib values, change if needed
-LIB_DIR="$WRAPPER_DIR/lib/linux_x86_64_glibc_228"
 SOURCE_DIR="$WRAPPER_DIR/goo-engine"
+LIB_DIR="$SOURCE_DIR/lib/linux_x64"
 DIFF_REF_DIR="$WRAPPER_DIR/diff_ref"
 LOCATIONS_FILE="$DIFF_REF_DIR/_file_locations.txt"
 
@@ -98,9 +98,10 @@ else
 fi
 
 cd goo-engine
+git checkout -b goo-engine-v4.3-release
 
 echo "Installing Linux system packages..."
-./build_files/build_environment/install_linux_packages.py
+python build_files/build_environment/install_linux_packages.py
 
 # Regenerate the patch files just in case.
 if [ -f "$WRAPPER_DIR/generate_patches.sh" ]; then
@@ -108,12 +109,8 @@ if [ -f "$WRAPPER_DIR/generate_patches.sh" ]; then
     "$WRAPPER_DIR/generate_patches.sh"
 fi
 
-echo "Patching make_update.py..."
-apply_patch_from_manifest "make_update.py"
-
 echo "Downloading precompiled libraries..."
-# Added --no-blender to prevent git revision errors on the main repo
-./build_files/utils/make_update.py --use-linux-libraries --no-blender
+python build_files/utils/make_update.py --use-linux-libraries
 
 echo "Renaming webp folder in libraries..."
 if [ -d "$LIB_DIR/webp" ]; then
@@ -123,7 +120,7 @@ if [ -d "$LIB_DIR/webp" ]; then
     mv "$LIB_DIR/webp" "$LIB_DIR/libwebp"
 fi
 
-# Apply Remaining Patches
+# Apply Patches
 echo "Applying remaining patches from manifest..."
 
 while read -r name rel_path; do
