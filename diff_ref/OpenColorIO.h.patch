@@ -1,0 +1,10 @@
+--- /home/qed/goo-engine-linux-wrapper/diff_ref/OpenColorIO.h.from	2025-11-29 19:59:03.962842007 -0500
++++ /home/qed/goo-engine-linux-wrapper/diff_ref/OpenColorIO.h.to	2025-11-29 19:59:14.503513379 -0500
+@@ -12,6 +12,7 @@
+ #include <string>
+ #include <fstream>
+ #include <vector>
++#include <cstdint>
+ 
+ #include "OpenColorABI.h"
+ #include "OpenColorTypes.h"

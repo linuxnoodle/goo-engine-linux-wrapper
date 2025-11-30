@@ -1,0 +1,11 @@
+--- /home/qed/goo-engine-linux-wrapper/diff_ref/GridBuilder.h.from	2025-11-29 19:17:36.077890260 -0500
++++ /home/qed/goo-engine-linux-wrapper/diff_ref/GridBuilder.h.to	2025-11-29 18:49:26.911449189 -0500
+@@ -1158,7 +1158,7 @@
+         ValueIterator& operator=(const ValueIterator&) = default;
+         ValueType operator*() const { NANOVDB_ASSERT(*this); return mParent->mValues[mPos];}
+         Coord getCoord() const { NANOVDB_ASSERT(*this); return mParent->offsetToGlobalCoord(mPos);}
+-        bool isActive() const { NANOVDB_ASSERT(*this); return mParent->isActive(mPos);}
++        bool isActive() const { NANOVDB_ASSERT(*this); return mParent->mValueMask.isOn(mPos);}
+         operator bool() const {return mPos < SIZE;}
+         ValueIterator& operator++() {++mPos; return *this;}
+         ValueIterator operator++(int) {

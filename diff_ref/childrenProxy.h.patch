@@ -1,0 +1,27 @@
+--- /home/qed/goo-engine-linux-wrapper/diff_ref/childrenProxy.h.from	2025-11-29 19:20:57.979907214 -0500
++++ /home/qed/goo-engine-linux-wrapper/diff_ref/childrenProxy.h.to	2025-11-29 19:21:42.899078796 -0500
+@@ -471,6 +471,11 @@
+         return _Validate(CanInsert) ? _PrimInsert(value, index) : false;
+     }
+ 
++    bool _Set(const mapped_type& value, const mapped_type& newValue)
++    {
++        return _Validate(CanSet) ? _PrimSet(value, newValue) : false;
++    }
++
+     bool _Erase(const key_type& key)
+     {
+         return _Validate(CanErase) ? _PrimErase(key) : false;
+@@ -488,6 +493,12 @@
+         return _view.GetChildren().Copy(v, _type);
+     }
+ 
++    bool _PrimSet(const mapped_type& value, const mapped_type& newValue)
++    {
++        return _view.GetChildren().Set(
++            Adapter::Convert(value), Adapter::Convert(newValue), _type);
++    }
++
+     bool _PrimInsert(const mapped_type& value, size_t index)
+     {
+         return _view.GetChildren().Insert(

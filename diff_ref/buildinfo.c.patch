@@ -1,0 +1,10 @@
+--- /home/qed/goo-engine-linux-wrapper/diff_ref/buildinfo.c.from	2025-11-29 19:22:18.567252627 -0500
++++ /home/qed/goo-engine-linux-wrapper/diff_ref/buildinfo.c.to	2025-11-29 19:22:32.699284499 -0500
+@@ -51,5 +51,7 @@
+ char build_linkflags[] = "unmaintained buildsystem alert!";
+ char build_system[] = "unmaintained buildsystem alert!";
+ #  endif
++int TIFFFaxBlackCodes;
++int TIFFFaxWhiteCodes;
+ 
+ #endif  // BUILD_DATE
