@@ -15,11 +15,13 @@ Before running the scripts, ensure you have the following installed on your Linu
 git clone https://github.com/linuxnoodle/goo-engine-linux-wrapper.git
 cd goo-engine-linux-wrapper
 
+# Download  from https://gofile.io/d/dIOflj
+
 # Run the main build script
 chmod +x build_goo_engine.sh
 ./build_goo_engine.sh
 ```
-This will take a stupidly long time. I have a zip of the current `lib/` files [here](https://gofile.io/d/dIOflj), so you don't have to deal with all the 429s if you don't want to. If there's a better way of distributing this, let me know because MAN is this painful.
+This will take a stupidly long time without downloading it. I have a zip of the current `lib/` files [here](https://gofile.io/d/dIOflj), so you don't have to deal with all the 429s if you don't want to. If there's a better way of distributing this, let me know because MAN is this painful.
 
 ## Installing
 ```
