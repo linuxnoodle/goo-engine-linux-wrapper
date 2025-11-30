@@ -12,16 +12,14 @@ Before running the scripts, ensure you have the following installed on your Linu
 ## Building
 ```
 # Clone this wrapper repository
-git clone https://github.com/linuxnoodle/goo-engine-linux-wrapper.git
+git clone --recursive https://github.com/linuxnoodle/goo-engine-linux-wrapper.git
 cd goo-engine-linux-wrapper
-
-# Download  from https://gofile.io/d/dIOflj
 
 # Run the main build script
 chmod +x build_goo_engine.sh
 ./build_goo_engine.sh
 ```
-This will take a stupidly long time without downloading it. I have a zip of the current `lib/` files [here](https://gofile.io/d/dIOflj), so you don't have to deal with all the 429s if you don't want to. If there's a better way of distributing this, let me know because MAN is this painful.
+This will take a stupidly long time if you don't clone recursively. I have a zip of the current `lib/` files [here](https://gofile.io/d/dIOflj), if you really hate using my submodule for some reason. If there's a better way of distributing this, let me know because MAN is this painful.
 
 ## Installing
 ```
@@ -72,6 +70,8 @@ What the actual installation process is:
 - Building GooEngine using `make`.
 
 It honestly wasn't that bad. The problems started when I started trying to automate the build using some scripts. I tried seeing if I could just ignore the `robots.txt` and download the libs through HTTP, with it somehow being even slower than just waiting out the timeout for SVN. I tried just making my own git diffs and using them here, but it was such a tedious process that I just made it modular and slammed the stuff in `diff_ref/`. After all that garbage, I just asked Gemini to make me an installation and AppImage generation script. 
+
+I also made another git repo just to hold the current version of the libraries, because the repo blender has [here](https://projects.blender.org/blender/lib-linux_x64.git) doesn't really want to plug and play, and I've already spent too long doing this.
 
 ## Current Patches
 - `nanovdb/util/GridBuilder.h`: Fixes a template compilation error (isActive -> mValueMask.isOn).
