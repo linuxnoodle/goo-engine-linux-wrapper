@@ -71,7 +71,12 @@ What the installation process looks like:
 - `opencolorio/include/OpenColorIO/OpenColorIO.h`: Literally just adds an include for cstdint. OCIO 2.3.2 still has this.
 - `source/creator/buildinfo.c`: Adds missing TIFF variables (TIFFFaxBlackCodes, etc.) to fix linker errors.
 
-## Runtime Fix
+## Known Issues & Workarounds
+
+### startup.blend LFS pointer
+The goo-engine repo has exceeded its GitHub LFS budget, so `release/datafiles/startup.blend` is an LFS pointer instead of a real blend file. If you have Blender installed system-wide, the build script will detect this and generate a working replacement automatically. If not, you'll need to manually provide a valid `startup.blend` from an official Blender release.
+
+### Runtime Fix
 The build compiles fine but the binary won't launch because `libsycl.so.7` isn't copied to the output directory by default. The build script handles this automatically by copying it from `lib/linux_x64/dpcpp/lib/` into `build_linux/bin/lib/`. If you're building manually, you'll need to do this yourself.
 
 ## Cleaning
