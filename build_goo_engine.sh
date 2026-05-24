@@ -116,6 +116,31 @@ while read -r name rel_path; do
 
 done < "$LOCATIONS_FILE"
 
+STARTUP_BLEND="$SOURCE_DIR/release/datafiles/startup.blend"
+if file "$STARTUP_BLEND" | grep -q "ASCII\|text"; then
+    echo "startup.blend is an LFS pointer, generating replacement..."
+    if command -v blender &>/dev/null; then
+        blender -b -noaudio -P <(cat << 'PYEOF'
+import bpy, os
+bpy.ops.wm.save_as_mainfile(filepath=os.environ.get("STARTUP_PATH", "/tmp/startup_new.blend"))
+print("Generated startup.blend")
+PYEOF
+        ) 2>/dev/null
+        cp /tmp/startup_new.blend "$STARTUP_BLEND"
+    else
+        echo "WARNING: No system blender found. startup.blend will be broken."
+        echo "Install blender system-wide or manually replace the file."
+    fi
+fi
+
+if [ "$GOO_ENGINE_BRANCH" = "goo-engine-v4.4-release" ]; then
+    MINMAXZ_SHADER="$SOURCE_DIR/source/blender/draw/engines/gooengine/shaders/effect_minmaxz_frag.glsl"
+    if [ -f "$MINMAXZ_SHADER" ] && grep -q "gl_FragColor" "$MINMAXZ_SHADER"; then
+        echo "Fixing gl_FragColor in effect_minmaxz_frag.glsl..."
+        sed -i 's/gl_FragColor/fragColor/g' "$MINMAXZ_SHADER"
+    fi
+fi
+
 echo "Starting Compilation (make)..."
 cd "$SOURCE_DIR"
 make -j$(nproc)
