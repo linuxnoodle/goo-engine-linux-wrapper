@@ -1,10 +1,12 @@
-# Goo Engine Linux Build Wrapper
+# Goo Engine Linux Build Wrapper (v4.4)
 This project provides a relatively comprehensive, automated toolkit for building, installing, and packaging [Goo Engine](https://github.com/dillongoostudios/goo-engine) (a fork of Blender with an emphasis on NPR) on Linux.
 
+This branch targets `goo-engine-v4.4-release` (Blender 4.4.3).
+
 ## Prereqs
-Before running the scripts, ensure you have the following installed on your Linux distribution (though I'm fairly certain the process should install most of these):
-- Git 
-- Subversion (svn)
+Before running the scripts, ensure you have the following installed on your Linux distribution (though the process should install most of these):
+- Git
+- Git LFS
 - Python 3
 - Wget
 - Build Essentials (GCC, Make, CMake)
@@ -12,14 +14,15 @@ Before running the scripts, ensure you have the following installed on your Linu
 ## Building
 ```
 # Clone this wrapper repository
-git clone --recursive https://github.com/linuxnoodle/goo-engine-linux-wrapper.git
+git clone -b v4.4-release https://github.com/linuxnoodle/goo-engine-linux-wrapper.git
 cd goo-engine-linux-wrapper
 
 # Run the main build script
 chmod +x build_goo_engine.sh
 ./build_goo_engine.sh
 ```
-This will take a stupidly long time if you don't clone recursively. I have a zip of the current `lib/` files [here](https://gofile.io/d/dIOflj), if you really hate using my submodule for some reason. If there's a better way of distributing this, let me know because MAN is this painful.
+
+The v4.4 branch downloads its libraries through git LFS submodules from Blender's own repos, so you don't need the separate `lib/` submodule or SVN anymore.
 
 ## Installing
 ```
@@ -41,44 +44,35 @@ This will build an AppImage for this project. The project also needs to be succe
 ├── build_appimage.sh      
 ├── install_goo_engine.sh  
 ├── generate_patches.sh
-├── diff_ref/               # PATCH SYSTEM: If there are any changes or other breaking features, send a PR!
+├── diff_ref/               # PATCH SYSTEM
 │   ├── _file_locations.txt # Manifest mapping patch files to target paths.
 │   ├── *.from              # Original reference file.
 │   ├── *.to                # Fixed reference file.
 │   └── *.patch             # Generated diffs.
 ├── goo-engine/            
-├── lib/                   
 ├── build_linux/           # (Generated) Compiled output (binaries).
 └── build_linux_appimage/  # (Generated) Workspace for AppImage creation.
 ```
 
 ## Methodology
-I made this in like three hours because I thought it would be easy after trying to build this myself. I didn't make a PR to the goo-engine repo, because these patches are *really* janky. I'll break down the whole process for anyone trying out something similar. A lot of this wouldn't be possible without legendboyAni's explanation [here](https://github.com/dillongoostudios/goo-engine/issues/2#issuecomment-2066268619), though there admittedly is a lot more I needed to do.
+v4.4 uses the same git LFS library setup as v4.3. The good news is that upstream has fixed a bunch of the compilation issues that needed patching in older versions. Only two patches are needed now.
 
-What I think the proper installation process is supposed to be is:
-- Cloning the repo.
-- Installing the requisite packages using `./build_files/build_environment/install_linux_packages.py`.
-- Downloading the libraries using `./build_files/utils/make_update.py --use-linux-libraries`.
-- Building GooEngine using `make`.
-
-What the actual installation process is:
-- Cloning the repo.
+What the installation process looks like:
+- Cloning goo-engine and checking out the v4.4 branch.
 - Installing the requisite packages from `./build_files/build_environment/install_linux_packages.py`.
-- Patching `./build_files/utils/make_update.py` to retry on timeout, because the servers are seemingly dogshit.
-- Taking 81 years to download the libraries using `./build_files/utils/make_update.py --use-linux-libraries`.
-- Patching like four files either in `lib/` or `source/` somewhere that causes compilation errors.
+- Downloading the libraries using `./build_files/utils/make_update.py --use-linux-libraries`.
+- Patching two files that still cause compilation errors.
+- Copying `libsycl.so` and `libur_loader.so` into the build output because they don't get bundled by default.
 - Building GooEngine using `make`.
-
-It honestly wasn't that bad. The problems started when I started trying to automate the build using some scripts. I tried seeing if I could just ignore the `robots.txt` and download the libs through HTTP, with it somehow being even slower than just waiting out the timeout for SVN. I tried just making my own git diffs and using them here, but it was such a tedious process that I just made it modular and slammed the stuff in `diff_ref/`. After all that garbage, I just asked Gemini to make me an installation and AppImage generation script. 
-
-I also made another git repo just to hold the current version of the libraries, because the repo blender has [here](https://projects.blender.org/blender/lib-linux_x64.git) doesn't really want to plug and play, and I've already spent too long doing this.
 
 ## Current Patches
-- `nanovdb/util/GridBuilder.h`: Fixes a template compilation error (isActive -> mValueMask.isOn).
-- `pxr/usd/sdf/childrenProxy.h`: Adds missing _Set methods required by newer compilers.
-- `lib/linux_x86_64_glibc_228/opencolorio/include/OpenColorIO/OpenColorIO.h`: Literally just adds an include for cstdint.
+- `pxr/usd/sdf/childrenProxy.h`: Adds missing _Set methods required by newer compilers. USD 25.02 still has this.
 - `source/creator/buildinfo.c`: Adds missing TIFF variables (TIFFFaxBlackCodes, etc.) to fix linker errors.
-- `lib/linux_x86_64_glibc_228/webp`: Renames `webp` to `libwebp` so CMake doesn't yell at me.
+
+The nanovdb GridBuilder.h and OpenColorIO patches from older versions are no longer needed. OpenVDB 12.0 removed the broken `isActive` call and OCIO 2.4.1 finally includes `<cstdint>`.
+
+## Runtime Fix
+Same situation as v4.3 - the build compiles fine but the binary won't launch without `libsycl.so` and `libur_loader.so` in the output directory. The build script handles this automatically. v4.4 uses `libsycl.so.8` (v4.3 used `.7`) and also needs `libur_loader.so.0`.
 
 ## Cleaning
 ```
