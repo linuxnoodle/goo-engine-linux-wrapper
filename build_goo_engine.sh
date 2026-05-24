@@ -4,14 +4,14 @@ set -e
 # Reference variables
 REPO_URL="https://github.com/dillongoostudios/goo-engine.git"
 WRAPPER_DIR=$(pwd)
+GOO_ENGINE_BRANCH="goo-engine-v4.3-release"
 
-# This might change depending on future lib values, change if needed
-LIB_DIR="$WRAPPER_DIR/lib/linux_x86_64_glibc_228"
 SOURCE_DIR="$WRAPPER_DIR/goo-engine"
+LIB_DIR="$SOURCE_DIR/lib/linux_x64"
 DIFF_REF_DIR="$WRAPPER_DIR/diff_ref"
 LOCATIONS_FILE="$DIFF_REF_DIR/_file_locations.txt"
 
-echo "=== Starting Goo Engine Build Process ==="
+echo "=== Starting Goo Engine v4.3 Build Process ==="
 
 # Usage: apply_patch_from_manifest "filename"
 apply_patch_from_manifest() {
@@ -98,9 +98,10 @@ else
 fi
 
 cd goo-engine
+git checkout "$GOO_ENGINE_BRANCH"
 
 echo "Installing Linux system packages..."
-./build_files/build_environment/install_linux_packages.py
+python3 build_files/build_environment/install_linux_packages.py
 
 # Regenerate the patch files just in case.
 if [ -f "$WRAPPER_DIR/generate_patches.sh" ]; then
@@ -108,12 +109,8 @@ if [ -f "$WRAPPER_DIR/generate_patches.sh" ]; then
     "$WRAPPER_DIR/generate_patches.sh"
 fi
 
-echo "Patching make_update.py..."
-apply_patch_from_manifest "make_update.py"
-
 echo "Downloading precompiled libraries..."
-# Added --no-blender to prevent git revision errors on the main repo
-./build_files/utils/make_update.py --use-linux-libraries --no-blender
+python3 build_files/utils/make_update.py --use-linux-libraries
 
 echo "Renaming webp folder in libraries..."
 if [ -d "$LIB_DIR/webp" ]; then
@@ -123,16 +120,12 @@ if [ -d "$LIB_DIR/webp" ]; then
     mv "$LIB_DIR/webp" "$LIB_DIR/libwebp"
 fi
 
-# Apply Remaining Patches
-echo "Applying remaining patches from manifest..."
+# Apply Patches
+echo "Applying patches from manifest..."
 
 while read -r name rel_path; do
     [[ "$name" =~ ^#.*$ ]] && continue
     [ -z "$name" ] && continue
-
-    if [ "$name" == "make_update.py" ]; then
-        continue
-    fi
     
     apply_patch_from_manifest "$name"
 
@@ -142,5 +135,16 @@ done < "$LOCATIONS_FILE"
 echo "Starting Compilation (make)..."
 cd "$SOURCE_DIR"
 make -j$(nproc)
+
+# Copy missing runtime library (libsycl not bundled by default install)
+BUILD_LIB_DIR="$WRAPPER_DIR/build_linux/bin/lib"
+SYCL_SRC="$LIB_DIR/dpcpp/lib"
+if [ -f "$SYCL_SRC/libsycl.so.7" ] && [ -d "$BUILD_LIB_DIR" ]; then
+    echo "Copying libsycl runtime library..."
+    cp "$SYCL_SRC/libsycl.so.7" "$BUILD_LIB_DIR/"
+    cp "$SYCL_SRC/libsycl.so.7.2.0-8" "$BUILD_LIB_DIR/"
+    ln -sf libsycl.so.7.2.0-8 "$BUILD_LIB_DIR/libsycl.so.7"
+    ln -sf libsycl.so.7 "$BUILD_LIB_DIR/libsycl.so"
+fi
 
 echo "=== Build Complete ==="
