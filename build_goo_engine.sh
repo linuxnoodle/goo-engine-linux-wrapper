@@ -118,19 +118,8 @@ done < "$LOCATIONS_FILE"
 
 STARTUP_BLEND="$SOURCE_DIR/release/datafiles/startup.blend"
 if file "$STARTUP_BLEND" | grep -q "ASCII\|text"; then
-    echo "startup.blend is an LFS pointer, generating replacement..."
-    if command -v blender &>/dev/null; then
-        blender -b -noaudio -P <(cat << 'PYEOF'
-import bpy, os
-bpy.ops.wm.save_as_mainfile(filepath=os.environ.get("STARTUP_PATH", "/tmp/startup_new.blend"))
-print("Generated startup.blend")
-PYEOF
-        ) 2>/dev/null
-        cp /tmp/startup_new.blend "$STARTUP_BLEND"
-    else
-        echo "WARNING: No system blender found. startup.blend will be broken."
-        echo "Install blender system-wide or manually replace the file."
-    fi
+    echo "startup.blend is an LFS pointer, using fallback_startup.blend..."
+    cp "$WRAPPER_DIR/fallback_startup.blend" "$STARTUP_BLEND"
 fi
 
 if [ "$GOO_ENGINE_BRANCH" = "goo-engine-v4.4-release" ]; then
