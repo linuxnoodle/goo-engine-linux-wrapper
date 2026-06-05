@@ -38,7 +38,7 @@ apply_patch_from_manifest() {
 
             if [[ "$target_path" == *"/goo-engine/"* ]]; then
                 local git_rel_path="${target_path#$SOURCE_DIR/}"
-                (cd "$SOURCE_DIR" && git checkout "$git_rel_path" 2>/dev/null || true)
+                (cd "$SOURCE_DIR" && GIT_LFS_SKIP_SMUDGE=1 git checkout -f "$git_rel_path" 2>/dev/null || true)
             fi
 
             if [ ! -f "$patch_file" ]; then
@@ -85,7 +85,7 @@ else
 fi
 
 cd goo-engine
-git checkout "$GOO_ENGINE_BRANCH"
+GIT_LFS_SKIP_SMUDGE=1 git checkout -f "$GOO_ENGINE_BRANCH"
 
 echo "Installing Linux system packages..."
 python3 build_files/build_environment/install_linux_packages.py
