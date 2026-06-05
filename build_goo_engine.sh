@@ -120,6 +120,19 @@ STARTUP_BLEND="$SOURCE_DIR/release/datafiles/startup.blend"
 if file "$STARTUP_BLEND" | grep -q "ASCII\|text"; then
     echo "startup.blend is an LFS pointer, using fallback_startup.blend..."
     cp "$WRAPPER_DIR/fallback_startup.blend" "$STARTUP_BLEND"
+    
+    echo "Fixing corrupt LFS pointers in release/datafiles (icons, studiolights, splash)..."
+    if [ -f "$WRAPPER_DIR/fallback_datafiles.tar.gz" ]; then
+        tar -xzf "$WRAPPER_DIR/fallback_datafiles.tar.gz" -C "$SOURCE_DIR/release/datafiles/"
+    fi
+    
+    find "$SOURCE_DIR/release/datafiles" -type f -exec grep -q "version https://git-lfs.github.com/spec/v1" {} \; -print | while read f; do
+        if [[ "$f" == *".png" ]]; then
+            echo "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=" | base64 -d > "$f"
+        elif [[ "$f" == *".dat" ]]; then
+            cp "$SOURCE_DIR/release/datafiles/icons/ops.generic.select.dat" "$f" 2>/dev/null || touch "$f"
+        fi
+    done
 fi
 
 if [ "$GOO_ENGINE_BRANCH" = "goo-engine-v4.4-release" ]; then
