@@ -81,7 +81,7 @@ apply_patch_from_manifest() {
 if [ -d "goo-engine" ]; then
     echo "Directory goo-engine exists. Skipping initial clone..."
 else
-    git clone "$REPO_URL" goo-engine
+    GIT_LFS_SKIP_SMUDGE=1 git clone "$REPO_URL" goo-engine
 fi
 
 cd goo-engine
@@ -143,7 +143,7 @@ fi
 
 echo "Starting Compilation (make)..."
 cd "$SOURCE_DIR"
-make -j$(nproc)
+make BUILD_CMAKE_ARGS="-DWITH_ASSERT_ABORT=OFF" -j$(nproc)
 
 BUILD_LIB_DIR="$WRAPPER_DIR/build_linux/bin/lib"
 SYCL_SRC="$LIB_DIR/dpcpp/lib"
