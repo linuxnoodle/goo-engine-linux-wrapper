@@ -151,7 +151,7 @@ fi
 # Compile
 echo "Starting Compilation (make)..."
 cd "$SOURCE_DIR"
-make -j$(nproc)
+make BUILD_CMAKE_ARGS="-DWITH_ASSERT_ABORT=OFF" -j$(nproc)
 
 # Copy missing runtime library (libsycl not bundled by default install)
 BUILD_LIB_DIR="$WRAPPER_DIR/build_linux/bin/lib"
