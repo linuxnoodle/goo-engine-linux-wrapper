@@ -199,3 +199,12 @@ print([d.name for d in p.devices if d.type=='HIP'])"     # AMD Radeon RX 6950 XT
 goo-engine-52 --background ~/Downloads/Zhu_Yuan_V1.3.blend \
     --python-expr "import bpy; bpy.context.scene.render.filepath='/tmp/zy.png'; bpy.ops.render.render(write_still=True)"
 ```
+
+## Status
+
+**EXPERIMENTAL — AI-GENERATED.** This branch was generated with AI assistance
+and is derived from
+[NaMgAl-Studio/goo-engine-5.2.0](https://github.com/NaMgAl-Studio/goo-engine-5.2.0)
+(an unofficial Goo Engine → Blender 5.2 / EEVEE-Next port), itself derived from
+dillongoostudios/goo-engine and Blender. No warranty; the upstream port's own
+README recommends the original Goo Engine 4.4 for production NPR work.

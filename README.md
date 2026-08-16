@@ -121,3 +121,12 @@ Highlights (full detail in [DIFFERENCES_52.md](DIFFERENCES_52.md)):
 
 The v4.4 branch (original goo-engine) remains available and is still the
 production-NPR recommendation per the port's own README.
+
+> **EXPERIMENTAL — AI-GENERATED.** This branch is experimental, generated with
+> AI assistance, and is **derived from
+> [NaMgAl-Studio/goo-engine-5.2.0](https://github.com/NaMgAl-Studio/goo-engine-5.2.0)**
+> (an unofficial port of Goo Engine to Blender 5.2 / EEVEE-Next), which in turn
+> derives from [dillongoostudios/goo-engine](https://github.com/dillongoostudios/goo-engine)
+> and Blender. Use at your own risk; for production NPR work prefer the
+> original Goo Engine (v4.4 branch of this wrapper) or Blender itself.
+
