@@ -87,3 +87,37 @@ Same situation as v4.3 - the build compiles fine but the binary won't launch wit
 chmod +x reset_build.sh
 ./reset_build.sh
 ```
+
+---
+
+## v5.2-release branch (Goo Engine on Blender 5.2 / EEVEE-Next)
+
+This branch builds the unofficial
+[NaMgAl-Studio/goo-engine-5.2.0](https://github.com/NaMgAl-Studio/goo-engine-5.2.0)
+port: Goo Engine's NPR feature set re-implemented on Blender 5.2 /
+EEVEE-Next (BSL shader pipeline).
+
+```
+git clone -b v5.2-release https://github.com/linuxnoodle/goo-engine-linux-wrapper.git
+cd goo-engine-linux-wrapper
+chmod +x build_goo_engine_52.sh
+./build_goo_engine_52.sh     # builds with Cycles HIP (ROCm) support
+./install_goo_engine_52.sh   # installs to ~/.local/share/goo-engine-52 (isolated config)
+```
+
+Highlights (full detail in [DIFFERENCES_52.md](DIFFERENCES_52.md)):
+
+- Dedicated **"Goo Engine"** render-engine entry (`BLENDER_GOO_ENGINE`) plus
+  UI-panel compatibility patch — the dropdown and settings match goo-engine 4.4.
+- **Black-material fix** for legacy Goo shader packs (ZZZB etc.): the 5.2
+  shader inliner aborted on structural link cycles that Blender flags
+  `NODE_LINK_VALID=0` (invalid links counted as "available"), producing
+  empty materials. Cycle checks + traversal now ignore invalid links, like
+  legacy EEVEE did.
+- `WITH_GPU_SHADER_CPP_COMPILATION=OFF` (GCC 16 linting error), HIP kernel
+  build (`CYCLES_HIP_BINARIES_ARCH=gfx1030`), SYCL runtime-libs copy.
+- Launcher isolates user resources (`BLENDER_USER_RESOURCES`) so the 5.2
+  build never collides with stock Blender 5.2 config.
+
+The v4.4 branch (original goo-engine) remains available and is still the
+production-NPR recommendation per the port's own README.

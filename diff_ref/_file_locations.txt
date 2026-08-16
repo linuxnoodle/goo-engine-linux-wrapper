@@ -1,2 +1,11 @@
 childrenProxy.h goo-engine/lib/linux_x64/usd/include/pxr/usd/sdf/childrenProxy.h
 buildinfo.c goo-engine/source/creator/buildinfo.c
+eevee_engine.cc goo-engine/source/blender/draw/engines/eevee/eevee_engine.cc
+eevee_engine.h goo-engine/source/blender/draw/engines/eevee/eevee_engine.h
+draw_context.cc goo-engine/source/blender/draw/intern/draw_context.cc
+scene.cc goo-engine/source/blender/blenkernel/intern/scene.cc
+DNA_scene_types.h goo-engine/source/blender/makesdna/DNA_scene_types.h
+overlay_instance.cc goo-engine/source/blender/draw/engines/overlay/overlay_instance.cc
+rna_scene.cc goo-engine/source/blender/makesrna/intern/rna_scene.cc
+node_tree_zones.cc goo-engine/source/blender/blenkernel/intern/node_tree_zones.cc
+shader_nodes_inline.cc goo-engine/source/blender/nodes/intern/shader_nodes_inline.cc

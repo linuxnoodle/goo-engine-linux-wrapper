@@ -1,0 +1,20 @@
+--- /home/qed/Projects/py/goo-engine-linux-wrapper/diff_ref/draw_context.cc.from	2026-08-15 22:04:34.634398907 -0400
++++ /home/qed/Projects/py/goo-engine-linux-wrapper/diff_ref/draw_context.cc.to	2026-08-15 22:04:34.636688460 -0400
+@@ -1202,7 +1202,8 @@
+       case OB_MATERIAL:
+       case OB_RENDER:
+       default:
+-        if (render_engine_type == &DRW_engine_viewport_eevee_type) {
++        if (render_engine_type == &DRW_engine_viewport_eevee_type ||
++            render_engine_type == &DRW_engine_viewport_goo_type) {
+           view_data.eevee.set_used(true);
+         }
+         else if (render_engine_type == &DRW_engine_viewport_workbench_type) {
+@@ -2286,6 +2287,7 @@
+ void DRW_engines_register()
+ {
+   RE_engines_register(&DRW_engine_viewport_eevee_type);
++  RE_engines_register(&DRW_engine_viewport_goo_type);
+   RE_engines_register(&DRW_engine_viewport_workbench_type);
+ }
+ 

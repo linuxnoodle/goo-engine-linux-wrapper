@@ -1,0 +1,66 @@
+--- /home/qed/Projects/py/goo-engine-linux-wrapper/diff_ref/node_tree_zones.cc.from	2026-08-15 22:04:34.664398693 -0400
++++ /home/qed/Projects/py/goo-engine-linux-wrapper/diff_ref/node_tree_zones.cc.to	2026-08-15 22:04:34.666551328 -0400
+@@ -219,10 +219,62 @@
+   }
+ }
+ 
++static bool has_cycle_ignoring_invalid_links(const bNodeTree &tree)
++{
++  /* Legacy GPU compilation skipped links without NODE_LINK_VALID (links that
++   * close dependency cycles are flagged invalid at tree update). Such links
++   * must not mark the tree as cyclic here, otherwise discover_tree_zones
++   * returns null and shader inlining aborts, rendering the whole material
++   * black (Goo Engine legacy files legitimately contain these cycles). */
++  auto link_is_usable = [](const bNodeLink &link) {
++    return link.is_available() && (link.flag & NODE_LINK_VALID) != 0;
++  };
++  Map<const bNode *, int> in_degree;
++  Vector<const bNode *> nodes;
++  for (const bNode *node : tree.runtime->nodes_by_id) {
++    nodes.append(node);
++    in_degree.add(node, 0);
++  }
++  for (const bNode *node : nodes) {
++    for (const bNodeSocket *socket : node->runtime->inputs) {
++      for (const bNodeLink *link : socket->directly_linked_links()) {
++        if (link_is_usable(*link)) {
++          in_degree.add(node, in_degree.lookup(node) + 1);
++        }
++      }
++    }
++  }
++  Vector<const bNode *> queue;
++  for (const bNode *node : nodes) {
++    if (in_degree.lookup(node) == 0) {
++      queue.append(node);
++    }
++  }
++  int removed = 0;
++  while (!queue.is_empty()) {
++    const bNode *node = queue.pop_last();
++    removed++;
++    for (const bNodeSocket *socket : node->runtime->outputs) {
++      for (const bNodeLink *link : socket->directly_linked_links()) {
++        if (!link_is_usable(*link)) {
++          continue;
++        }
++        const bNode *target = link->tonode;
++        const int new_degree = in_degree.lookup(target) - 1;
++        in_degree.add(target, new_degree);
++        if (new_degree == 0) {
++          queue.append(target);
++        }
++      }
++    }
++  }
++  return removed < nodes.size();
++}
++
+ static std::unique_ptr<bNodeTreeZones> discover_tree_zones(const bNodeTree &tree)
+ {
+   tree.ensure_topology_cache();
+-  if (tree.has_available_link_cycle()) {
++  if (has_cycle_ignoring_invalid_links(tree)) {
+     return {};
+   }
+ 

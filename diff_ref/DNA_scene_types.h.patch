@@ -1,0 +1,10 @@
+--- /home/qed/Projects/py/goo-engine-linux-wrapper/diff_ref/DNA_scene_types.h.from	2026-08-15 22:04:34.646398821 -0400
++++ /home/qed/Projects/py/goo-engine-linux-wrapper/diff_ref/DNA_scene_types.h.to	2026-08-15 22:04:34.648910823 -0400
+@@ -2951,6 +2951,7 @@
+ 
+ /** #RenderData::engine (scene.cc) */
+ extern const char *RE_engine_id_BLENDER_EEVEE;
++extern const char *RE_engine_id_BLENDER_GOO_ENGINE;
+ extern const char *RE_engine_id_BLENDER_WORKBENCH;
+ extern const char *RE_engine_id_CYCLES;
+ /** Only used for versioning. Was used during the transition period between 4.2 and 5.0. */

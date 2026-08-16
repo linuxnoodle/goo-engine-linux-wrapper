@@ -1,0 +1,10 @@
+--- /home/qed/Projects/py/goo-engine-linux-wrapper/diff_ref/rna_scene.cc.from	2026-08-15 22:04:34.657398743 -0400
++++ /home/qed/Projects/py/goo-engine-linux-wrapper/diff_ref/rna_scene.cc.to	2026-08-15 22:04:34.660134323 -0400
+@@ -6965,6 +6965,7 @@
+ 
+   static const EnumPropertyItem engine_items[] = {
+       {0, "BLENDER_EEVEE", 0, "EEVEE", ""},
++      {0, "BLENDER_GOO_ENGINE", 0, "Goo Engine", ""},
+       {0, nullptr, 0, nullptr, nullptr},
+   };
+ 

@@ -1,0 +1,10 @@
+--- /home/qed/Projects/py/goo-engine-linux-wrapper/diff_ref/eevee_engine.h.from	2026-08-15 22:04:34.628398949 -0400
++++ /home/qed/Projects/py/goo-engine-linux-wrapper/diff_ref/eevee_engine.h.to	2026-08-15 22:04:34.630927451 -0400
+@@ -14,6 +14,7 @@
+ namespace blender {
+ 
+ extern RenderEngineType DRW_engine_viewport_eevee_type;
++extern RenderEngineType DRW_engine_viewport_goo_type;
+ 
+ namespace eevee {
+ 

@@ -1,0 +1,20 @@
+--- /home/qed/Projects/py/goo-engine-linux-wrapper/diff_ref/scene.cc.from	2026-08-15 22:04:34.640398864 -0400
++++ /home/qed/Projects/py/goo-engine-linux-wrapper/diff_ref/scene.cc.to	2026-08-15 22:04:34.642901456 -0400
+@@ -1671,6 +1671,7 @@
+ /** \} */
+ 
+ const char *RE_engine_id_BLENDER_EEVEE = "BLENDER_EEVEE";
++const char *RE_engine_id_BLENDER_GOO_ENGINE = "BLENDER_GOO_ENGINE";
+ const char *RE_engine_id_BLENDER_EEVEE_NEXT = "BLENDER_EEVEE_NEXT";
+ const char *RE_engine_id_BLENDER_WORKBENCH = "BLENDER_WORKBENCH";
+ const char *RE_engine_id_CYCLES = "CYCLES";
+@@ -3034,7 +3035,8 @@
+ 
+ bool BKE_scene_uses_blender_eevee(const Scene *scene)
+ {
+-  return STREQ(scene->r.engine, RE_engine_id_BLENDER_EEVEE);
++  return STREQ(scene->r.engine, RE_engine_id_BLENDER_EEVEE) ||
++         STREQ(scene->r.engine, RE_engine_id_BLENDER_GOO_ENGINE);
+ }
+ 
+ bool BKE_scene_uses_blender_workbench(const Scene *scene)

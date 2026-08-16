@@ -1,0 +1,117 @@
+--- /home/qed/Projects/py/goo-engine-linux-wrapper/diff_ref/shader_nodes_inline.cc.from	2026-08-15 22:04:34.669398657 -0400
++++ /home/qed/Projects/py/goo-engine-linux-wrapper/diff_ref/shader_nodes_inline.cc.to	2026-08-15 22:04:34.671757461 -0400
+@@ -226,7 +226,7 @@
+   bool do_inline()
+   {
+     src_tree_.ensure_topology_cache();
+-    if (src_tree_.has_available_link_cycle()) {
++    if (has_cycle_over_usable_links(src_tree_)) {
+       return false;
+     }
+ 
+@@ -283,6 +283,69 @@
+     return true;
+   }
+ 
++  /**
++   * Links that should be considered during inlining.
++   *
++   * Matches the legacy (pre-inline) GPU compilation: links whose
++   * NODE_LINK_VALID flag is unset (marked by the tree update for cycles and
++   * broken connections) are skipped, exactly like the old node exec system
++   * ignored them.  The topology-cache helpers (`is_used`/`is_available`)
++   * do not look at NODE_LINK_VALID, so cyclic links would otherwise make
++   * `has_available_link_cycle()` true and abort inlining, turning the whole
++   * material black (Goo Engine legacy files legitimately contain such
++   * cycles, e.g. a texture vector fed from a node group output that consumes
++   * the same texture).
++   */
++  static bool link_is_usable(const bNodeLink *link)
++  {
++    return link->is_used() && (link->flag & NODE_LINK_VALID) != 0;
++  }
++
++  /** Kahn's algorithm over usable links only. */
++  bool has_cycle_over_usable_links(const bNodeTree &tree) const
++  {
++    Map<const bNode *, int> in_degree;
++    Vector<const bNode *> nodes;
++    for (const bNode *node : tree.runtime->nodes_by_id) {
++      nodes.append(node);
++      in_degree.add(node, 0);
++    }
++    for (const bNode *node : nodes) {
++      for (const bNodeSocket *socket : node->runtime->inputs) {
++        for (const bNodeLink *link : socket->directly_linked_links()) {
++          if (link_is_usable(link)) {
++            in_degree.add(node, in_degree.lookup(node) + 1);
++          }
++        }
++      }
++    }
++    Vector<const bNode *> queue;
++    for (const bNode *node : nodes) {
++      if (in_degree.lookup(node) == 0) {
++        queue.append(node);
++      }
++    }
++    int removed = 0;
++    while (!queue.is_empty()) {
++      const bNode *node = queue.pop_last();
++      removed++;
++      for (const bNodeSocket *socket : node->runtime->outputs) {
++        for (const bNodeLink *link : socket->directly_linked_links()) {
++          if (!link_is_usable(link)) {
++            continue;
++          }
++          const bNode *target = link->tonode;
++          const int new_degree = in_degree.lookup(target) - 1;
++          in_degree.add(target, new_degree);
++          if (new_degree == 0) {
++            queue.append(target);
++          }
++        }
++      }
++    }
++    return removed < nodes.size();
++  }
++
+   Vector<SocketInContext> find_final_output_sockets()
+   {
+     Vector<TreeInContext> trees;
+@@ -353,7 +416,7 @@
+     if (!zones) {
+       return;
+     }
+-    if (tree.has_available_link_cycle()) {
++    if (has_cycle_over_usable_links(tree)) {
+       return;
+     }
+     r_trees.append({context, &tree});
+@@ -404,7 +467,7 @@
+ 
+     const bNodeLink *used_link = nullptr;
+     for (const bNodeLink *link : socket->directly_linked_links()) {
+-      if (!link->is_used() || link->fromnode == nullptr || link->fromnode->is_undefined()) {
++      if (!link_is_usable(link) || link->fromnode == nullptr || link->fromnode->is_undefined()) {
+         continue;
+       }
+       used_link = link;
+@@ -450,7 +513,7 @@
+     bool all_links_ready = true;
+     Vector<SocketValue, 0> values;
+     for (const bNodeLink *link : socket->directly_linked_links()) {
+-      if (!link->is_used()) {
++      if (!link_is_usable(link)) {
+         continue;
+       }
+       const ComputeContext *from_context = this->get_link_source_context(*link, socket);
+@@ -599,7 +662,7 @@
+         if (src_socket->is_multi_input()) {
+           const bNodeLink *src_link = nullptr;
+           for (const bNodeLink *link : src_socket->directly_linked_links()) {
+-            if (link->is_used()) {
++            if (link_is_usable(link)) {
+               src_link = link;
+               break;
+             }

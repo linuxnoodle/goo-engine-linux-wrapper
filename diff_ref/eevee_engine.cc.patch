@@ -1,0 +1,40 @@
+--- /home/qed/Projects/py/goo-engine-linux-wrapper/diff_ref/eevee_engine.cc.from	2026-08-15 22:04:34.623398985 -0400
++++ /home/qed/Projects/py/goo-engine-linux-wrapper/diff_ref/eevee_engine.cc.to	2026-08-15 22:04:34.625568159 -0400
+@@ -101,4 +101,37 @@
+     },
+ };
+ 
++/* Goo Engine render engine entry.
++ *
++ * The Goo Engine fork registers its EEVEE-based renderer under a dedicated
++ * "Goo Engine" engine id (see goo-engine v4.4, engines/gooengine).  This port
++ * implements the Goo feature set inside EEVEE-Next, so the "Goo Engine" entry
++ * shares the exact same renderer as EEVEE; it only exists so files and
++ * muscle memory from Goo Engine carry over (render engine dropdown parity). */
++RenderEngineType DRW_engine_viewport_goo_type = {
++    /*next*/ nullptr,
++    /*prev*/ nullptr,
++    /*idname*/ "BLENDER_GOO_ENGINE",
++    /*name*/ N_("Goo Engine"),
++    /*flag*/ RE_INTERNAL | RE_USE_PREVIEW | RE_USE_STEREO_VIEWPORT | RE_USE_GPU_CONTEXT |
++            RE_USE_EEVEE_VIEWPORT,
++    /*update*/ nullptr,
++    /*render*/ &eevee_render,
++    /*render_frame_finish*/ nullptr,
++    /*draw*/ nullptr,
++    /*bake*/ nullptr,
++    /*view_update*/ nullptr,
++    /*view_draw*/ nullptr,
++    /*update_script_node*/ nullptr,
++    /*update_render_passes*/ &eevee_render_update_passes,
++    /*update_custom_camera*/ nullptr,
++    /*draw_engine*/ nullptr,
++    /*rna_ext*/
++    {
++        /*data*/ nullptr,
++        /*srna*/ nullptr,
++        /*call*/ nullptr,
++    },
++};
++
+ }  // namespace blender

@@ -1,8 +1,8 @@
 // Copyright Contributors to the OpenVDB Project
-// SPDX-License-Identifier: MPL-2.0
+// SPDX-License-Identifier: Apache-2.0
 
 /*!
-    \file GridBuilder.h
+    \file nanovdb/tools/GridBuilder.h
 
     \author Ken Museth
 
@@ -12,8 +12,8 @@
            can be used (instead of OpenVDB) to build nanovdb grids on the CPU.
 */
 
-#ifndef NANOVDB_GRID_BUILDER_H_HAS_BEEN_INCLUDED
-#define NANOVDB_GRID_BUILDER_H_HAS_BEEN_INCLUDED
+#ifndef NANOVDB_TOOLS_BUILD_GRIDBUILDER_H_HAS_BEEN_INCLUDED
+#define NANOVDB_TOOLS_BUILD_GRIDBUILDER_H_HAS_BEEN_INCLUDED
 
 #include <iostream>
 
@@ -27,12 +27,12 @@
 #include <atomic>
 
 #include <nanovdb/NanoVDB.h>
-#include "Range.h"
-#include "ForEach.h"
+#include <nanovdb/util/Range.h>
+#include <nanovdb/util/ForEach.h>
 
 namespace nanovdb {
 
-namespace build {
+namespace tools::build {
 
 // ----------------------------> Froward decelerations of random access methods <--------------------------------------
 
@@ -444,12 +444,12 @@ struct RootNode
     template<typename NodeT>
     uint32_t nodeCount() const
     {
-        static_assert(is_same<ValueType, typename NodeT::ValueType>::value, "Root::getNodes: Invalid type");
+        static_assert(util::is_same<ValueType, typename NodeT::ValueType>::value, "Root::getNodes: Invalid type");
         static_assert(NodeT::LEVEL < LEVEL, "Root::getNodes: LEVEL error");
         uint32_t sum = 0;
         for (auto iter = mTable.begin(); iter != mTable.end(); ++iter) {
             if (iter->second.child == nullptr) continue; // skip tiles
-            if constexpr(is_same<NodeT, ChildT>::value) { //resolved at compile-time
+            if constexpr(util::is_same<NodeT, ChildT>::value) { //resolved at compile-time
                 ++sum;
             } else {
                 sum += iter->second.child->template nodeCount<NodeT>();
@@ -461,12 +461,12 @@ struct RootNode
     template<typename NodeT>
     void getNodes(std::vector<NodeT*>& array)
     {
-        static_assert(is_same<ValueType, typename NodeT::ValueType>::value, "Root::getNodes: Invalid type");
+        static_assert(util::is_same<ValueType, typename NodeT::ValueType>::value, "Root::getNodes: Invalid type");
         static_assert(NodeT::LEVEL < LEVEL, "Root::getNodes: LEVEL error");
         for (auto iter = mTable.begin(); iter != mTable.end(); ++iter) {
             if (iter->second.child == nullptr)
                 continue;
-            if constexpr(is_same<NodeT, ChildT>::value) { //resolved at compile-time
+            if constexpr(util::is_same<NodeT, ChildT>::value) { //resolved at compile-time
                 array.push_back(reinterpret_cast<NodeT*>(iter->second.child));
             } else {
                 iter->second.child->getNodes(array);
@@ -531,7 +531,7 @@ struct RootNode
     template<typename NodeT>
     void addNode(NodeT*& node)
     {
-        if constexpr(is_same<NodeT, ChildT>::value) { //resolved at compile-time
+        if constexpr(util::is_same<NodeT, ChildT>::value) { //resolved at compile-time
             this->addChild(reinterpret_cast<ChildT*&>(node));
         } else {
             ChildT*     child = nullptr;
@@ -566,16 +566,16 @@ struct RootNode
     }
 
     template<typename T>
-    typename std::enable_if<std::is_floating_point<T>::value>::type
+    typename util::enable_if<std::is_floating_point<T>::value>::type
     signedFloodFill(T outside);
 
-}; // build::RootNode
+}; // tools::build::RootNode
 
 //================================================================================================
 
 template<typename ChildT>
 template<typename T>
-inline typename std::enable_if<std::is_floating_point<T>::value>::type
+inline typename util::enable_if<std::is_floating_point<T>::value>::type
 RootNode<ChildT>::signedFloodFill(T outside)
 {
     std::map<Coord, ChildT*> nodeKeys;
@@ -603,7 +603,7 @@ RootNode<ChildT>::signedFloodFill(T outside)
             mTable[key] = typename RootNode<ChildT>::Tile(-outside, false); // inactive tile
         }
     }
-} // build::RootNode::signedFloodFill
+} // tools::build::RootNode::signedFloodFill
 
 // ----------------------------> InternalNode <--------------------------------------
 
@@ -940,10 +940,10 @@ struct InternalNode
     template<typename NodeT>
     uint32_t nodeCount() const
     {
-        static_assert(is_same<ValueType, typename NodeT::ValueType>::value, "Node::getNodes: Invalid type");
+        static_assert(util::is_same<ValueType, typename NodeT::ValueType>::value, "Node::getNodes: Invalid type");
         NANOVDB_ASSERT(NodeT::LEVEL < LEVEL);
         uint32_t sum = 0;
-        if constexpr(is_same<NodeT, ChildT>::value) { // resolved at compile-time
+        if constexpr(util::is_same<NodeT, ChildT>::value) { // resolved at compile-time
             sum += mChildMask.countOn();
         } else if constexpr(LEVEL>1) {
             for (auto iter = mChildMask.beginOn(); iter; ++iter) {
@@ -956,10 +956,10 @@ struct InternalNode
     template<typename NodeT>
     void getNodes(std::vector<NodeT*>& array)
     {
-        static_assert(is_same<ValueType, typename NodeT::ValueType>::value, "Node::getNodes: Invalid type");
+        static_assert(util::is_same<ValueType, typename NodeT::ValueType>::value, "Node::getNodes: Invalid type");
         NANOVDB_ASSERT(NodeT::LEVEL < LEVEL);
         for (auto iter = mChildMask.beginOn(); iter; ++iter) {
-            if constexpr(is_same<NodeT, ChildT>::value) { // resolved at compile-time
+            if constexpr(util::is_same<NodeT, ChildT>::value) { // resolved at compile-time
                 array.push_back(reinterpret_cast<NodeT*>(mTable[*iter].child));
             } else if constexpr(LEVEL>1) {
                 mTable[*iter].child->getNodes(array);
@@ -1016,7 +1016,7 @@ struct InternalNode
     template<typename NodeT>
     void addNode(NodeT*& node)
     {
-        if constexpr(is_same<NodeT, ChildT>::value) { //resolved at compile-time
+        if constexpr(util::is_same<NodeT, ChildT>::value) { //resolved at compile-time
             this->addChild(reinterpret_cast<ChildT*&>(node));
         } else if constexpr(LEVEL>1) {
             const uint32_t n = CoordToOffset(node->mOrigin);
@@ -1047,16 +1047,16 @@ struct InternalNode
     }
 
     template<typename T>
-    typename std::enable_if<std::is_floating_point<T>::value>::type
+    typename util::enable_if<std::is_floating_point<T>::value>::type
     signedFloodFill(T outside);
 
-}; // build::InternalNode
+}; // tools::build::InternalNode
 
 //================================================================================================
 
 template<typename ChildT>
 template<typename T>
-inline typename std::enable_if<std::is_floating_point<T>::value>::type
+inline typename util::enable_if<std::is_floating_point<T>::value>::type
 InternalNode<ChildT>::signedFloodFill(T outside)
 {
     const uint32_t first = *mChildMask.beginOn();
@@ -1085,7 +1085,7 @@ InternalNode<ChildT>::signedFloodFill(T outside)
             }
         }
     }
-} // build::InternalNode::signedFloodFill
+} // tools::build::InternalNode::signedFloodFill
 
 // ----------------------------> LeafNode <--------------------------------------
 
@@ -1158,7 +1158,7 @@ struct LeafNode
         ValueIterator& operator=(const ValueIterator&) = default;
         ValueType operator*() const { NANOVDB_ASSERT(*this); return mParent->mValues[mPos];}
         Coord getCoord() const { NANOVDB_ASSERT(*this); return mParent->offsetToGlobalCoord(mPos);}
-        bool isActive() const { NANOVDB_ASSERT(*this); return mParent->isActive(mPos);}
+        bool isActive() const { NANOVDB_ASSERT(*this); return mParent->mValueMask.isOn(mPos);}
         operator bool() const {return mPos < SIZE;}
         ValueIterator& operator++() {++mPos; return *this;}
         ValueIterator operator++(int) {
@@ -1277,10 +1277,10 @@ struct LeafNode
     }
 
     template<typename T>
-    typename std::enable_if<std::is_floating_point<T>::value>::type
+    typename util::enable_if<std::is_floating_point<T>::value>::type
     signedFloodFill(T outside);
 
-}; // build::LeafNode<T>
+}; // tools::build::LeafNode<T>
 
 //================================================================================================
 
@@ -1452,7 +1452,7 @@ struct LeafNode<ValueMask>
         mValueMask |= other.mValueMask;
     }
 
-}; // build::LeafNode<ValueMask>
+}; // tools::build::LeafNode<ValueMask>
 
 //================================================================================================
 
@@ -1630,13 +1630,13 @@ struct LeafNode<bool>
         mValueMask |= other.mValueMask;
     }
 
-}; // build::LeafNode<bool>
+}; // tools::build::LeafNode<bool>
 
 //================================================================================================
 
 template<typename BuildT>
 template<typename T>
-inline typename std::enable_if<std::is_floating_point<T>::value>::type
+inline typename util::enable_if<std::is_floating_point<T>::value>::type
 LeafNode<BuildT>::signedFloodFill(T outside)
 {
     const uint32_t first = *mValueMask.beginOn();
@@ -1663,7 +1663,7 @@ LeafNode<BuildT>::signedFloodFill(T outside)
             }
         }
     }
-} // build::LeafNode<T>::signedFloodFill
+} // tools::build::LeafNode<T>::signedFloodFill
 
 // ----------------------------> ValueAccessor <--------------------------------------
 
@@ -1671,15 +1671,15 @@ template<typename BuildT>
 struct ValueAccessor
 {
     using ValueType = typename BuildToValueMap<BuildT>::type;
-    using LeafT = build::LeafNode<BuildT>;
-    using Node1 = build::InternalNode<LeafT>;
-    using Node2 = build::InternalNode<Node1>;
-    using RootNodeType = build::RootNode<Node2>;
+    using LeafT = LeafNode<BuildT>;
+    using Node1 = InternalNode<LeafT>;
+    using Node2 = InternalNode<Node1>;
+    using RootNodeType = RootNode<Node2>;
     using LeafNodeType = typename RootNodeType::LeafNodeType;
 
     ValueAccessor(RootNodeType& root)
         : mRoot(root)
-        , mKeys{Coord(Maximum<int>::value()), Coord(Maximum<int>::value()), Coord(Maximum<int>::value())}
+        , mKeys{Coord(math::Maximum<int>::value()), Coord(math::Maximum<int>::value()), Coord(math::Maximum<int>::value())}
         , mNode{nullptr, nullptr, nullptr}
     {
     }
@@ -1801,7 +1801,7 @@ struct ValueAccessor
     RootNodeType& mRoot;
     mutable Coord mKeys[3];
     mutable void* mNode[3];
-}; // build::ValueAccessor<BuildT>
+}; // tools::build::ValueAccessor<BuildT>
 
 // ----------------------------> Tree <--------------------------------------
 
@@ -1809,10 +1809,10 @@ template<typename BuildT>
 struct Tree
 {
     using ValueType = typename BuildToValueMap<BuildT>::type;
-    using Node0 = build::LeafNode<BuildT>;
-    using Node1 = build::InternalNode<Node0>;
-    using Node2 = build::InternalNode<Node1>;
-    using RootNodeType = build::RootNode<Node2>;
+    using Node0 = LeafNode<BuildT>;
+    using Node1 = InternalNode<Node0>;
+    using Node2 = InternalNode<Node1>;
+    using RootNodeType = RootNode<Node2>;
     using LeafNodeType = typename RootNodeType::LeafNodeType;
     struct WriteAccessor;
 
@@ -1837,7 +1837,7 @@ struct Tree
     ValueAccessor<BuildT> getAccessor() { return ValueAccessor<BuildT>(mRoot); }
     /// @brief special accessor for thread-safe writing only
     WriteAccessor getWriteAccessor() { return WriteAccessor(mRoot, mMutex); }
-};// build::Tree<BuildT>
+};// tools::build::Tree<BuildT>
 
 // ----------------------------> Tree::WriteAccessor <--------------------------------------
 
@@ -1873,7 +1873,7 @@ struct Tree<BuildT>::WriteAccessor
     RootNodeType &mParent, mRoot;
     AccT          mAcc;
     std::mutex   &mMutex;
-}; // build::Tree<BuildT>::WriteAccessor
+}; // tools::build::Tree<BuildT>::WriteAccessor
 
 // ----------------------------> Grid <--------------------------------------
 
@@ -1883,10 +1883,10 @@ struct Grid : public Tree<BuildT>
     using BuildType = BuildT;
     using ValueType = typename BuildToValueMap<BuildT>::type;
     using TreeType = Tree<BuildT>;
-    using Node0 = build::LeafNode<BuildT>;
-    using Node1 = build::InternalNode<Node0>;
-    using Node2 = build::InternalNode<Node1>;
-    using RootNodeType = build::RootNode<Node2>;
+    using Node0 = LeafNode<BuildT>;
+    using Node1 = InternalNode<Node0>;
+    using Node2 = InternalNode<Node1>;
+    using RootNodeType = RootNode<Node2>;
 
     GridClass   mGridClass;
     GridType    mGridType;
@@ -1896,7 +1896,7 @@ struct Grid : public Tree<BuildT>
     Grid(const ValueType &background, const std::string &name = "", GridClass gClass = GridClass::Unknown)
       : TreeType(background)
       , mGridClass(gClass)
-      , mGridType(mapToGridType<BuildT>())
+      , mGridType(toGridType<BuildT>())
       , mName(name)
     {
         mMap.set(1.0, Vec3d(0.0), 1.0);
@@ -1922,7 +1922,7 @@ struct Grid : public Tree<BuildT>
     ///              for level sets and otherwise it's zero.
     template <typename Func>
     void operator()(const Func& func, const CoordBBox& bbox, ValueType delta = ValueType(0));
-};// build::Grid
+};// tools::build::Grid
 
 template <typename BuildT>
 template <typename Func>
@@ -1930,13 +1930,13 @@ void Grid<BuildT>::operator()(const Func& func, const CoordBBox& bbox, ValueType
 {
     auto &root = this->tree().root();
 #if __cplusplus >= 201703L
-    static_assert(is_same<ValueType, typename std::invoke_result<Func,const Coord&>::type>::value, "GridBuilder: mismatched ValueType");
+    static_assert(util::is_same<ValueType, typename std::invoke_result<Func,const Coord&>::type>::value, "GridBuilder: mismatched ValueType");
 #else// invoke_result was introduced in C++17 and result_of was removed in C++20
-    static_assert(is_same<ValueType, typename std::result_of<Func(const Coord&)>::type>::value, "GridBuilder: mismatched ValueType");
+    static_assert(util::is_same<ValueType, typename std::result_of<Func(const Coord&)>::type>::value, "GridBuilder: mismatched ValueType");
 #endif
     const CoordBBox leafBBox(bbox[0] >> Node0::TOTAL, bbox[1] >> Node0::TOTAL);
     std::mutex mutex;
-    forEach(leafBBox, [&](const CoordBBox& b) {
+    util::forEach(leafBBox, [&](const CoordBBox& b) {
         Node0* leaf = nullptr;
         for (auto it = b.begin(); it; ++it) {
             Coord min(*it << Node0::TOTAL), max(min + Coord(Node0::DIM - 1));
@@ -1968,7 +1968,7 @@ void Grid<BuildT>::operator()(const Func& func, const CoordBBox& bbox, ValueType
                 NANOVDB_ASSERT(leaf == nullptr);
             }
         }// loop over sub-part of leafBBox
-        if (leaf) delete leaf;
+        delete leaf;
     });
 
     // Prune leaf and tile nodes
@@ -2014,7 +2014,7 @@ void Grid<BuildT>::operator()(const Func& func, const CoordBBox& bbox, ValueType
             }
         }// is child node of the root
     }// loop over root table
-}// build::Grid::operator()
+}// tools::build::Grid::operator()
 
 //================================================================================================
 
@@ -2049,7 +2049,7 @@ using BoolGrid   = Grid<bool>;
 
 // ----------------------------> NodeManager <--------------------------------------
 
-// GridT can be openvdb::Grid and nanovdb::build::Grid
+// GridT can be openvdb::Grid and nanovdb::tools::build::Grid
 template <typename GridT>
 class NodeManager
 {
@@ -2099,17 +2099,17 @@ public:
     }
 
     template <int LEVEL>
-    typename enable_if<LEVEL==0, Node0&>::type node(int i) {return *mArray0[i];}
+    typename util::enable_if<LEVEL==0, Node0&>::type node(int i) {return *mArray0[i];}
     template <int LEVEL>
-    typename enable_if<LEVEL==0, const Node0&>::type node(int i) const {return *mArray0[i];}
+    typename util::enable_if<LEVEL==0, const Node0&>::type node(int i) const {return *mArray0[i];}
     template <int LEVEL>
-    typename enable_if<LEVEL==1, Node1&>::type node(int i) {return *mArray1[i];}
+    typename util::enable_if<LEVEL==1, Node1&>::type node(int i) {return *mArray1[i];}
     template <int LEVEL>
-    typename enable_if<LEVEL==1, const Node1&>::type node(int i) const {return *mArray1[i];}
+    typename util::enable_if<LEVEL==1, const Node1&>::type node(int i) const {return *mArray1[i];}
     template <int LEVEL>
-    typename enable_if<LEVEL==2, Node2&>::type node(int i) {return *mArray2[i];}
+    typename util::enable_if<LEVEL==2, Node2&>::type node(int i) {return *mArray2[i];}
     template <int LEVEL>
-    typename enable_if<LEVEL==2, const Node2&>::type node(int i) const {return *mArray2[i];}
+    typename util::enable_if<LEVEL==2, const Node2&>::type node(int i) const {return *mArray2[i];}
 
     /// @brief Return the i'th leaf node with respect to breadth-first ordering
     const Node0& leaf(uint32_t i) const { return *mArray0[i]; }
@@ -2145,19 +2145,19 @@ protected:
 };// NodeManager
 
 template <typename NodeManagerT>
-typename enable_if<is_floating_point<typename NodeManagerT::ValueType>::value>::type
+typename util::enable_if<util::is_floating_point<typename NodeManagerT::ValueType>::value>::type
 sdfToLevelSet(NodeManagerT &mgr)
 {
     mgr.grid().mGridClass = GridClass::LevelSet;
     // Note that the bottom-up flood filling is essential
     const auto outside = mgr.root().mBackground;
-    forEach(0, mgr.leafCount(), 8, [&](const Range1D& r) {
+    util::forEach(0, mgr.leafCount(), 8, [&](const util::Range1D& r) {
         for (auto i = r.begin(); i != r.end(); ++i) mgr.leaf(i).signedFloodFill(outside);
     });
-    forEach(0, mgr.lowerCount(), 1, [&](const Range1D& r) {
+    util::forEach(0, mgr.lowerCount(), 1, [&](const util::Range1D& r) {
         for (auto i = r.begin(); i != r.end(); ++i) mgr.lower(i).signedFloodFill(outside);
     });
-    forEach(0, mgr.upperCount(), 1, [&](const Range1D& r) {
+    util::forEach(0, mgr.upperCount(), 1, [&](const util::Range1D& r) {
         for (auto i = r.begin(); i != r.end(); ++i) mgr.upper(i).signedFloodFill(outside);
     });
     mgr.root().signedFloodFill(outside);
@@ -2169,7 +2169,8 @@ void levelSetToFog(NodeManagerT &mgr, bool rebuild = true)
     using ValueType = typename NodeManagerT::ValueType;
     mgr.grid().mGridClass = GridClass::FogVolume;
     const ValueType d = -mgr.root().mBackground, w = 1.0f / d;
-    std::atomic_bool prune{false};
+    //std::atomic_bool prune{false};
+    std::atomic<bool> prune{false};
     auto op = [&](ValueType& v) -> bool {
         if (v > ValueType(0)) {
             v = ValueType(0);
@@ -2178,13 +2179,13 @@ void levelSetToFog(NodeManagerT &mgr, bool rebuild = true)
         v = v > d ? v * w : ValueType(1);
         return true;
     };
-    forEach(0, mgr.leafCount(), 8, [&](const Range1D& r) {
+    util::forEach(0, mgr.leafCount(), 8, [&](const util::Range1D& r) {
         for (auto i = r.begin(); i != r.end(); ++i) {
             auto& leaf = mgr.leaf(i);
             for (uint32_t i = 0; i < 512u; ++i) leaf.mValueMask.set(i, op(leaf.mValues[i]));
         }
     });
-    forEach(0, mgr.lowerCount(), 1, [&](const Range1D& r) {
+    util::forEach(0, mgr.lowerCount(), 1, [&](const util::Range1D& r) {
         for (auto i = r.begin(); i != r.end(); ++i) {
             auto& node = mgr.lower(i);
             for (uint32_t i = 0; i < 4096u; ++i) {
@@ -2202,7 +2203,7 @@ void levelSetToFog(NodeManagerT &mgr, bool rebuild = true)
             }
         }
     });
-    forEach(0, mgr.upperCount(), 1, [&](const Range1D& r) {
+    util::forEach(0, mgr.upperCount(), 1, [&](const util::Range1D& r) {
         for (auto i = r.begin(); i != r.end(); ++i) {
             auto& node = mgr.upper(i);
             for (uint32_t i = 0; i < 32768u; ++i) {
@@ -2307,8 +2308,8 @@ struct ProbeValue {
     }
 };// ProbeValue<T>
 
-} // namespace build
+} // namespace tools::build
 
 } // namespace nanovdb
 
-#endif // NANOVDB_GRID_BUILDER_H_HAS_BEEN_INCLUDED
+#endif // NANOVDB_TOOLS_BUILD_GRIDBUILDER_H_HAS_BEEN_INCLUDED
