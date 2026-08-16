@@ -2,3 +2,4 @@ build_linux/
 build_linux_appimage/
 goo-engine/
 scripts/
+__pycache__/
