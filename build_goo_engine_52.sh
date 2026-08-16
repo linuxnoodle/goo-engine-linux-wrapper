@@ -1,6 +1,6 @@
 #!/bin/bash
 # ============================================================================
-# Goo Engine 5.2 Linux Build Script  (goo-engine-linux-wrapper, v5.2-release)
+# Goo Engine 5.2 Linux Build Script  (goo-engine-linux-wrapper, v5.2-beta)
 #
 # Builds the NaMgAl-Studio/goo-engine-5.2.0 port (Goo Engine NPR feature set
 # re-implemented on Blender 5.2 / EEVEE-Next) with:

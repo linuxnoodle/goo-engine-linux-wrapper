@@ -1,6 +1,6 @@
 #!/bin/bash
 # ============================================================================
-# Goo Engine 5.2 AppImage Build Script  (v5.2-release branch)
+# Goo Engine 5.2 AppImage Build Script  (v5.2-beta branch)
 #
 # Bundles the 5.2 build output (build_linux/bin) into a portable AppImage.
 # Adapts the v4.4 build_appimage.sh for the 5.2 install layout / naming.

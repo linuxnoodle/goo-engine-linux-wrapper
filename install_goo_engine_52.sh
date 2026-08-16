@@ -1,6 +1,6 @@
 #!/bin/bash
 # ============================================================================
-# Goo Engine 5.2 Install Script  (goo-engine-linux-wrapper, v5.2-release)
+# Goo Engine 5.2 Install Script  (goo-engine-linux-wrapper, v5.2-beta)
 #
 # Installs the freshly built 5.2 binary to ~/.local/share/goo-engine-52 with
 # an ISOLATED user-resources directory (~/.config/goo-engine-52).

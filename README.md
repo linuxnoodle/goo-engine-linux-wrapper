@@ -90,7 +90,7 @@ chmod +x reset_build.sh
 
 ---
 
-## v5.2-release branch (Goo Engine on Blender 5.2 / EEVEE-Next)
+## v5.2-beta branch (Goo Engine on Blender 5.2 / EEVEE-Next)
 
 This branch builds the unofficial
 [NaMgAl-Studio/goo-engine-5.2.0](https://github.com/NaMgAl-Studio/goo-engine-5.2.0)
@@ -98,7 +98,7 @@ port: Goo Engine's NPR feature set re-implemented on Blender 5.2 /
 EEVEE-Next (BSL shader pipeline).
 
 ```
-git clone -b v5.2-release https://github.com/linuxnoodle/goo-engine-linux-wrapper.git
+git clone -b v5.2-beta https://github.com/linuxnoodle/goo-engine-linux-wrapper.git
 cd goo-engine-linux-wrapper
 chmod +x build_goo_engine_52.sh
 ./build_goo_engine_52.sh     # builds with Cycles HIP (ROCm) support

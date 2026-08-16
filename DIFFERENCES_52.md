@@ -1,6 +1,6 @@
 # Goo Engine 5.2 branch — differences vs. the v4.4 wrapper
 
-This branch (`v5.2-release`) builds the
+This branch (`v5.2-beta`) builds the
 [NaMgAl-Studio/goo-engine-5.2.0](https://github.com/NaMgAl-Studio/goo-engine-5.2.0)
 port: Goo Engine's NPR feature set re-implemented on Blender 5.2 / EEVEE-Next
 (BSL shader pipeline). The v4.4 branch builds the original
