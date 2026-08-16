@@ -8,8 +8,8 @@ port: Goo Engine's NPR feature set re-implemented on Blender 5.2 / EEVEE-Next
 (legacy EEVEE fork).
 
 Everything below documents how this branch differs from `v4.4-release`, and
-what was needed to get legacy Goo asset packs (e.g. the ZZZB shader pack used
-by HoYoverse models) rendering correctly in the port.
+what was needed to get legacy Goo shader packs (files authored for goo-engine
+4.4's legacy EEVEE) rendering correctly in the port.
 
 ---
 
@@ -101,13 +101,12 @@ features — there is no clean stock-EEVEE option in the port.
 
 ### The black-material bug (the important one)
 
-Legacy Goo shader packs (e.g. ZZZB "Zenless Zone Zero Braincells") contain
-*structural* link cycles that Blender flags `NODE_LINK_VALID = 0` at tree
-update, e.g.:
+Legacy Goo shader packs can contain *structural* link cycles that Blender
+flags `NODE_LINK_VALID = 0` at tree update, e.g.:
 
 ```
-texture.Vector  <- NodeGroup.Face Direction Logic   (closing link, flagged invalid)
-texture.Color   -> NodeGroup.Face Lightmap input     (valid)
+texture.Vector  <- NodeGroup.Vector output        (closing link, flagged invalid)
+texture.Color   -> NodeGroup.color input           (valid)
 ```
 
 `bNodeLink::is_available()` (and therefore
@@ -133,9 +132,8 @@ Fix (both patches needed):
   cycle checks and for every link traversal in the inliner, so invalid
   links are skipped exactly like legacy skipped them.
 
-With these, the original Zhu Yuan file inlines fully (face 435 nodes, body
-493 nodes) and renders correctly — hair, face SDF shading, matcaps, eyes,
-accessories — with zero file-level shader edits.
+With these, previously-black materials inline fully and render correctly —
+with zero file-level shader edits.
 
 ## 4. Runtime fixes
 
@@ -162,12 +160,13 @@ The install script writes a real launcher file.)
 
 ## 6. Known remaining limitations (vs. goo-engine 4.4)
 
-- **Material-level "Set Depth" wrappers** (the ZZZB seethrough trick):
-  the wrapper's `Shader to RGB` after a mixed transparent+emission closure
-  still evaluates differently in EEVEE-Next, darkening the face in some
-  poses. Bypassing the wrapper (re-link material Output ← ZZZB Shader
-  directly) reproduces the goo-4.4 look exactly. Everything else — face SDF
-  shading, matcaps, body/accessories — works from the port fix alone.
+- **Shader-to-RGB after a mixed transparent+emission closure**: the
+  pattern some legacy Goo shader packs use for see-through effects (a
+  material-level wrapper that Shader-to-RGBs a mixed closure and blends in
+  behind-scene color) still evaluates differently in EEVEE-Next, darkening
+  the surface in some poses. Re-linking the material Output directly past
+  the wrapper reproduces the goo-4.4 look. Everything else — SDF shading,
+  matcaps, textures — works from the port fix alone.
 - **Screenspace Info / Shader to RGB semantics** after mixed closures
   diverge from legacy (the port's README documents SSI as
   "degrades gracefully per pass"). This is the remaining upstream gap.

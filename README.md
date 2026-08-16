@@ -109,7 +109,8 @@ Highlights (full detail in [DIFFERENCES_52.md](DIFFERENCES_52.md)):
 
 - Dedicated **"Goo Engine"** render-engine entry (`BLENDER_GOO_ENGINE`) plus
   UI-panel compatibility patch — the dropdown and settings match goo-engine 4.4.
-- **Black-material fix** for legacy Goo shader packs (ZZZB etc.): the 5.2
+- **Black-material fix** for legacy Goo shader packs containing structural
+  link cycles: the 5.2
   shader inliner aborted on structural link cycles that Blender flags
   `NODE_LINK_VALID=0` (invalid links counted as "available"), producing
   empty materials. Cycle checks + traversal now ignore invalid links, like
